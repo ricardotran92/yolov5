@@ -173,6 +173,37 @@ def run(
                     writer.writeheader()
                 writer.writerow(data)
 
+        
+        # Sửa lại hàm kiểm tra hướng di chuyển
+        def is_opposite_direction(xyxy_current, xyxy_previous):
+            # Xác định xem xe có đang đi ngược chiều hay không
+            # Dựa trên việc tọa độ y của bounding box hiện tại cao hơn so với bounding box trước đó
+            return xyxy_current[1] > xyxy_previous[1]
+
+        # Sửa lại hàm process_predictions() trong detect.py
+        def process_predictions(det, names):
+            prev_xyxy = None  # Tọa độ bounding box của frame trước
+            for *xyxy, conf, cls in reversed(det):
+                c = int(cls)  # integer class
+                label = names[c]
+                
+                # Xác định hướng di chuyển cho các loại xe cụ thể
+                if label in ["bus", "motorbike", "car", "truck"]:
+                    if prev_xyxy is not None and is_opposite_direction(xyxy, prev_xyxy):
+                        label = f"{label}_di_nguoc_chieu"
+                    else:
+                        label = f"{label}_di_dung_huong"
+
+                confidence = float(conf)
+                confidence_str = f"{confidence:.2f}"
+                
+                # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
+                prev_xyxy = xyxy
+
+        
+
+        
+        
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -186,6 +217,10 @@ def run(
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / "labels" / p.stem) + ("" if dataset.mode == "image" else f"_{frame}")  # im.txt
             s += "%gx%g " % im.shape[2:]  # print string
+
+             # Thêm xử lý kết quả
+            process_predictions(det, names)
+
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
