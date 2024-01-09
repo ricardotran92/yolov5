@@ -184,11 +184,11 @@ def run(
             return xyxy_current[1] > xyxy_previous[1]
 
         # Sửa lại hàm process_predictions() trong detect.py
-        def process_predictions(det, names):
-            prev_xyxy = None  # Tọa độ bounding box của frame trước
+        def process_predictions(det, names, prev_xyxy):
             for *xyxy, conf, cls in reversed(det):
                 c = int(cls)  # integer class
-                label = names[c]
+                # label = names[c]
+                label = names[c] if hide_conf else f"{names[c]}"
                 
                 # Xác định hướng di chuyển cho các loại xe cụ thể
                 if label in ["bus", "motorbike", "car", "truck"]:
@@ -199,9 +199,7 @@ def run(
 
                 confidence = float(conf)
                 confidence_str = f"{confidence:.2f}"
-
-                # print(f"{label} với độ tin cậy {confidence_str}")  # Hiển thị thông báo
-                
+               
                 # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
                 prev_xyxy = xyxy
 
@@ -224,7 +222,7 @@ def run(
             s += "%gx%g " % im.shape[2:]  # print string
 
              # Thêm xử lý kết quả
-            process_predictions(det, names)
+            process_predictions(det, names, prev_xyxy)
 
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
