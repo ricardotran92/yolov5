@@ -196,6 +196,8 @@ def run(
 
                 confidence = float(conf)
                 confidence_str = f"{confidence:.2f}"
+
+                print(f"{label} với độ tin cậy {confidence_str}")  # Hiển thị thông báo
                 
                 # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
                 prev_xyxy = xyxy
