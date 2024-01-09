@@ -197,9 +197,6 @@ def run(
 
             # Stream results
             im0 = annotator.result()
-
-        # Print time (inference-only) # from detect.py
-        LOGGER.info(f"{s}{'' if len(det) else '(no detections), '}{dt[1].dt * 1E3:.1f}ms")
             
         objects, CY1, CY2 = ct.update(rects)  #send the box to tracker
 
@@ -211,7 +208,7 @@ def run(
             if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing
                 text = "{}".format('right')
                 #text = "ID: {}".format(objectID)
-                cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, color=(0,255, 0), thickness=4) # default font: 0.5; thickness=2
+                cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, color=(0,255, 0), thickness=4) # default font: 0.5
                 cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
             else:
                 text = "{}".format('wrong')
@@ -254,8 +251,6 @@ def run(
         #print(rects)
         time_done = time.time()
         #print(f"Time 2nd half: {time_done*1000 -  time_pred_starts*1000}")
-
-    
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
