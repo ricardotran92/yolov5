@@ -132,9 +132,6 @@ def run(
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
     for path, im, im0s, vid_cap, s in dataset:
-
-        prev_xyxy = None  # Tọa độ bounding box của frame trước
-
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -176,27 +173,6 @@ def run(
                     writer.writeheader()
                 writer.writerow(data)
 
-        
-        # Sửa lại hàm kiểm tra hướng di chuyển
-        def is_opposite_direction(xyxy_current, xyxy_previous):
-            # Xác định xem xe có đang đi ngược chiều hay không
-            # Dựa trên việc tọa độ y của bounding box hiện tại cao hơn so với bounding box trước đó
-            return xyxy_current[1] > xyxy_previous[1]
-
-        # Sửa lại hàm process_predictions() trong detect.py
-        def process_predictions(det, names, prev_xyxy):
-            for *xyxy, conf, cls in reversed(det):
-                c = int(cls)  # integer class
-                # label = names[c]
-                label = names[c] if hide_conf else f"{names[c]}"
-                confidence = float(conf)
-                confidence_str = f"{confidence:.2f}"
-               
-                # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
-                prev_xyxy = xyxy
-            return prev_xyxy  # return the updated prev_xyxy
-        
-        
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -210,10 +186,6 @@ def run(
             save_path = str(save_dir / p.name)  # im.jpg
             txt_path = str(save_dir / "labels" / p.stem) + ("" if dataset.mode == "image" else f"_{frame}")  # im.txt
             s += "%gx%g " % im.shape[2:]  # print string
-
-             # Thêm xử lý kết quả
-            prev_xyxy = process_predictions(det, names, prev_xyxy)
-
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
@@ -245,14 +217,6 @@ def run(
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
-
-                        # Bổ sung thông báo hướng di chuyển vào label
-                        if label in ["bus", "motorbike", "car", "truck"]:
-                            if prev_xyxy is not None and is_opposite_direction(xyxy, prev_xyxy):
-                                label += "_di_nguoc_chieu"
-                            else:
-                                label += "_di_dung_huong"
-
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
