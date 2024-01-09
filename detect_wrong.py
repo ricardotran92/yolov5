@@ -208,7 +208,7 @@ def run(
             if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing
                 text = "{}".format('right')
                 #text = "ID: {}".format(objectID)
-                cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,255, 0), 2) # {font size: [0.5, 1.0]}
+                cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=(0,255, 0), thickness=2)
                 cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
             else:
                 text = "{}".format('wrong')
