@@ -189,22 +189,12 @@ def run(
                 c = int(cls)  # integer class
                 # label = names[c]
                 label = names[c] if hide_conf else f"{names[c]}"
-                
-                # Xác định hướng di chuyển cho các loại xe cụ thể
-                if label in ["bus", "motorbike", "car", "truck"]:
-                    if prev_xyxy is not None and is_opposite_direction(xyxy, prev_xyxy):
-                        label = f"{label}_di_nguoc_chieu"
-                    else:
-                        label = f"{label}_di_dung_huong"
-
                 confidence = float(conf)
                 confidence_str = f"{confidence:.2f}"
                
                 # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
                 prev_xyxy = xyxy
-
-        
-
+            return prev_xyxy  # return the updated prev_xyxy
         
         
         # Process predictions
@@ -222,7 +212,7 @@ def run(
             s += "%gx%g " % im.shape[2:]  # print string
 
              # Thêm xử lý kết quả
-            process_predictions(det, names, prev_xyxy)
+            prev_xyxy = process_predictions(det, names, prev_xyxy)
 
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
