@@ -132,6 +132,9 @@ def run(
     model.warmup(imgsz=(1 if pt or model.triton else bs, 3, *imgsz))  # warmup
     seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
     for path, im, im0s, vid_cap, s in dataset:
+
+        prev_xyxy = None  # Tọa độ bounding box của frame trước
+
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -197,7 +200,7 @@ def run(
                 confidence = float(conf)
                 confidence_str = f"{confidence:.2f}"
 
-                print(f"{label} với độ tin cậy {confidence_str}")  # Hiển thị thông báo
+                # print(f"{label} với độ tin cậy {confidence_str}")  # Hiển thị thông báo
                 
                 # Lưu tọa độ bounding box của frame hiện tại để so sánh với frame tiếp theo
                 prev_xyxy = xyxy
@@ -254,6 +257,14 @@ def run(
                     if save_img or save_crop or view_img:  # Add bbox to image
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
+
+                        # Bổ sung thông báo hướng di chuyển vào label
+                        if label in ["bus", "motorbike", "car", "truck"]:
+                            if prev_xyxy is not None and is_opposite_direction(xyxy, prev_xyxy):
+                                label += "_di_nguoc_chieu"
+                            else:
+                                label += "_di_dung_huong"
+
                         annotator.box_label(xyxy, label, color=colors(c, True))
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
