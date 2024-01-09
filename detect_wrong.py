@@ -205,7 +205,7 @@ def run(
             cy2=list(CY2.values())[objectID]
             # draw both the ID of the object and the centroid of the
             # object on the output frame
-            if (cy2<=cy1):                  #check whether the vehicle is incoming or outgoing
+            if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing
                 text = "{}".format('right')
                 #text = "ID: {}".format(objectID)
                 cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255, 0), 2)
