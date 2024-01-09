@@ -221,9 +221,9 @@ def run(
         cv2.line(im0, (0,ROI_MIN), (FRAME_WIDTH, ROI_MIN), (0,255,0), 3)
         cv2.line(im0, (0,ROI_MAX), (FRAME_WIDTH, ROI_MAX), (0,255,0), 3)
 
-        #if view_img:
-        cv2.imshow(str(p), im0)
-        cv2.waitKey(1)  # 1 millisecond
+        # #if view_img: # cannot display in Colab, requires a graphical user interface to work
+        # cv2.imshow(str(p), im0)
+        # cv2.waitKey(1)  # 1 millisecond
 
                 # Save results (image with detections)
         if save_img:
