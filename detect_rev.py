@@ -178,15 +178,9 @@ def run(
                 writer.writerow(data)
 
         rects = [] # new
+        # Step 1: Initialize a dictionary to store bounding boxes of objects # new2
+        bounding_boxes = {} # new2
 
-        # def save_images_wrongDirection(im0, x1, y1, x2, y2, objectID): # new2
-        #     # Save the frame when a vehicle is going in the 'wrong' direction
-        #     cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
-
-        #     # Crop the image to the bounding box and save for vehicle go wrong direction
-        #     vehicle = im0[y1:y2, x1:x2]
-        #     cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
-        
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -230,6 +224,13 @@ def run(
                     x2 = int(xyxy[2].detach().cpu().numpy()) # new
                     y2 = int(xyxy[3].detach().cpu().numpy()) # new
                     box_dimension = (x1,y1,x2,y2) # new
+
+                    # new 2: open
+                    # Step 2: Store bounding box of new objects
+                    if objectID not in bounding_boxes:  # Check if the object is new
+                        bounding_boxes[objectID] = box_dimension
+                    # new 2: close
+
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
 
                     if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
@@ -273,10 +274,11 @@ def run(
                 vehicle = im0[y1:y2, x1:x2]
                 cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
             
-            
+            # Step 3: Retrieve bounding box of objects and use it if object is moving in 'wrong' direction
             for (objectID, centroid) in objects.items():
                 cy1=list(CY1.values())[objectID]
                 cy2=list(CY2.values())[objectID]
+                (x1, y1, x2, y2) = bounding_boxes[objectID]  # new2_Retrieve bounding box of object
                 # draw both the ID of the object and the centroid of the
                 # object on the output frame
                 if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
@@ -291,8 +293,7 @@ def run(
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
                     # # Get the bounding box coordinates for the object
-                    # save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
-                    x1, y1, x2, y2 = objects[objectID][1]  # new_get the bounding box coordinates from the objects dictionary
+                    # x1, y1, x2, y2 = objects[objectID][1]  # new_get the bounding box coordinates from the objects dictionary
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
     
 
