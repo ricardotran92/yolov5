@@ -179,8 +179,8 @@ def run(
                     box_center = (y1+y2)/2   # we will check the movement of box center
 
 
-                    if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): #In our dataset, only class 1 and 2 are vehicles
-                        rects.append(box_dimension)  #if box enters the ROI, save its box for tracking
+                    if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
+                        rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
                    
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -205,7 +205,7 @@ def run(
             cy2=list(CY2.values())[objectID]
             # draw both the ID of the object and the centroid of the
             # object on the output frame
-            if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing
+            if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
                 text = "{}".format('right')
                 #text = "ID: {}".format(objectID)
                 cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, color=(0,255, 0), thickness=4) # default font: 0.5
