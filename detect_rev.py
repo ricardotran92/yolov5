@@ -259,7 +259,7 @@ def run(
                 cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
             
             # Initialize trackableObjects as an empty dictionary
-            trackableObjects = {}
+            trackableObjects = {} # new2
             
             for (objectID, centroid) in objects.items():
                 cy1=list(CY1.values())[objectID]
@@ -279,7 +279,13 @@ def run(
 
                     # Get the bounding box coordinates for the object
                     x1, y1, x2, y2 = trackableObjects[objectID].bbox
-                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
+                    # save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
+                    # Save the full image
+                    cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
+
+                    # Crop the image to the bounding box and save
+                    vehicle = im0[y1:y2, x1:x2]
+                    cv2.imwrite(f'wrong_direction_vehicle_{objectID}.jpg', vehicle)
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
