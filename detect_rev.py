@@ -364,15 +364,15 @@ def run(
             detection_counts_str = ', '.join(f'{k}: {v}' for k, v in detection_counts.items())
 
             # Overlay the detection counts
-            cv2.putText(im0s, detection_counts_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(im0, detection_counts_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
             # Overlay the total vehicle count
             total_vehicle_count = f"Total vehicle: {df['Vehicle Object'].count()}"
-            cv2.putText(im0s, total_vehicle_count, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(im0, total_vehicle_count, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
 
             # Overlay the total wrong vehicle count
             total_wrong_vehicle_count = f"Total wrong vehicle: {df[df['Direction'] == 'wrong']['Vehicle Object'].count()}"
-            cv2.putText(im0s, total_wrong_vehicle_count, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            cv2.putText(im0, total_wrong_vehicle_count, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
             # new4: close
 
             if view_img:
