@@ -367,11 +367,11 @@ def run(
             cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total vehicle count
-            total_vehicle_count = f"Tong so phuong tien: {df['Vehicle Object'].count()}"
+            total_vehicle_count = f"Tong xe: {df['Vehicle Object'].count()}"
             cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total wrong vehicle count
-            total_wrong_vehicle_count = f"Tong so phuong tien chay nguoc chieu: {df[df['Direction'] == 'nguoc_chieu']['Vehicle Object'].count()}"
+            total_wrong_vehicle_count = f"Tong xe nguoc_chieu: {df[df['Direction'] == 'nguoc_chieu']['Vehicle Object'].count()}"
             cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
             # new4: close
 
