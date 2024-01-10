@@ -76,6 +76,9 @@ ct = CentroidTracker() # new
 with open('vehicle_analysis.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Time", "Vehicle Object", "Direction"])
+
+# Create a set to store the IDs of recorded objects
+recorded_objects = set() # new3
 # new3: close
 
 @smart_inference_mode()
@@ -188,9 +191,6 @@ def run(
         rects = [] # new
         # Step 1: Initialize a dictionary to store bounding boxes of objects # new2
         bounding_boxes = {} # new2
-
-        # Create a set to store the IDs of recorded objects
-        recorded_objects = set() # new3
 
         # Process predictions
         for i, det in enumerate(pred):  # per image
