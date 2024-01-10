@@ -210,6 +210,9 @@ def run(
                     n = (det[:, 5] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
+                # Initialize trackableObjects as an empty dictionary # new2
+                trackableObjects = {} # new2
+                
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
                     c = int(cls)  # integer class
@@ -223,6 +226,10 @@ def run(
                     y2 = int(xyxy[3].detach().cpu().numpy()) # new
                     box_dimension = (x1,y1,x2,y2) # new
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
+
+                    # Update trackableObjects # new2
+                    objectID = len(trackableObjects)  # new2_Generate a new objectID
+                    trackableObjects[objectID] = box_dimension # new2
 
                     if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
                         rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
@@ -258,8 +265,6 @@ def run(
                 vehicle = im0[y1:y2, x1:x2]
                 cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
             
-            # Initialize trackableObjects as an empty dictionary
-            trackableObjects = {} # new2
             
             for (objectID, centroid) in objects.items():
                 cy1=list(CY1.values())[objectID]
@@ -278,14 +283,15 @@ def run(
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
                     # Get the bounding box coordinates for the object
-                    x1, y1, x2, y2 = trackableObjects[objectID].bbox
-                    # save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
-                    # Save the full image
-                    cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
+                    x1, y1, x2, y2 = trackableObjects[objectID]
+                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
+                    
+                    # # Save the full image
+                    # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
 
-                    # Crop the image to the bounding box and save
-                    vehicle = im0[y1:y2, x1:x2]
-                    cv2.imwrite(f'wrong_direction_vehicle_{objectID}.jpg', vehicle)
+                    # # Crop the image to the bounding box and save
+                    # vehicle = im0[y1:y2, x1:x2]
+                    # cv2.imwrite(f'wrong_direction_vehicle_{objectID}.jpg', vehicle)
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
