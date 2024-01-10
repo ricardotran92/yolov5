@@ -224,16 +224,10 @@ def run(
                     x2 = int(xyxy[2].detach().cpu().numpy()) # new
                     y2 = int(xyxy[3].detach().cpu().numpy()) # new
                     box_dimension = (x1,y1,x2,y2) # new
-
-                    # new 2: open
-                    # Step 2: Store bounding box of new objects
-                    if objectID not in bounding_boxes:  # Check if the object is new
-                        bounding_boxes[objectID] = box_dimension
-                    # new 2: close
-
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
 
-                    if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
+                    # if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
+                    if ROI_MIN <= box_center <= ROI_MAX:
                         rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
 
                     if save_csv:
@@ -274,11 +268,20 @@ def run(
                 vehicle = im0[y1:y2, x1:x2]
                 cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
             
-            # Step 3: Retrieve bounding box of objects and use it if object is moving in 'wrong' direction
+            
             for (objectID, centroid) in objects.items():
                 cy1=list(CY1.values())[objectID]
                 cy2=list(CY2.values())[objectID]
-                (x1, y1, x2, y2) = bounding_boxes[objectID]  # new2_Retrieve bounding box of object
+
+                # new2: open
+                # Step 2: Store bounding box of new objects
+                for rect in rects:
+                    if objectID not in bounding_boxes:  # Check if the object is new
+                        bounding_boxes[objectID] = rect
+
+                (x1, y1, x2, y2) = bounding_boxes[objectID]  # Retrieve bounding box of object
+                # new2: close
+
                 # draw both the ID of the object and the centroid of the
                 # object on the output frame
                 if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
