@@ -328,8 +328,11 @@ def run(
                 # Calculate the time in seconds
                 time_in_seconds = frame / frame_rate # new3
 
-                # Convert the time to hours, minutes, seconds, and milliseconds
-                time_str = str(timedelta(seconds=int(time_in_seconds))) + str(int((time_in_seconds % 1) * 1000)) + "ms"
+                # Convert the time to a timedelta object
+                time_obj = timedelta(seconds=time_in_seconds)
+
+                # Format the time string
+                time_str = str(time_obj)
                 
                 # Check if the objectID doesn't exist, add a new entry
                 if objectID not in df['Vehicle Object'].values:
