@@ -39,6 +39,7 @@ import torch
 import cv2 # new2
 from pathlib import Path # new2
 import time # new3
+import pandas as pd # new3
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -77,8 +78,10 @@ with open('vehicle_analysis.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(["Time", "Vehicle Object", "Direction"])
 
-# Create a set to store the IDs of recorded objects
-recorded_objects = set() # new3
+# # Create a set to store the IDs of recorded objects
+# recorded_objects = set() # new3
+# Create a DataFrame to store the data
+df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"])
 # new3: close
 
 @smart_inference_mode()
@@ -310,14 +313,18 @@ def run(
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
                 
                 # new3: open
-                # Write the data into the CSV file only if the object hasn't been recorded yet
-                if objectID not in recorded_objects:
-                    with open('vehicle_analysis.csv', 'a', newline='') as file:
-                        writer = csv.writer(file)
-                        writer.writerow([time.time(), objectID, text])
+                # # Write the data into the CSV file only if the object hasn't been recorded yet
+                # if objectID not in recorded_objects:
+                #     with open('vehicle_analysis.csv', 'a', newline='') as file:
+                #         writer = csv.writer(file)
+                #         writer.writerow([time.time(), objectID, text])
 
-                    # Add the object ID to the set of recorded objects
-                    recorded_objects.add(objectID)
+                #     # Add the object ID to the set of recorded objects
+                #     recorded_objects.add(objectID)
+                    
+                # Update the DataFrame only if the object hasn't been recorded as 'wrong' yet
+                if df.loc[df['Vehicle Object'] == objectID, 'Direction'].ne('wrong').any():
+                    df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
                 # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
@@ -365,6 +372,8 @@ def run(
     if update:
         strip_optimizer(weights[0])  # update model (to fix SourceChangeWarning)
 
+    # At the end of the video, write the DataFrame to a CSV file
+    df.to_csv('vehicle_analysis.csv', index=False) # new3
 
 def parse_opt():
     parser = argparse.ArgumentParser()
