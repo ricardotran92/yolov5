@@ -358,6 +358,23 @@ def run(
             cv2.line(im0, (0,ROI_MAX), (FRAME_WIDTH, ROI_MAX), (0,255,0), 3)
             # new_close
 
+            # new4: open
+            # Get the detection counts
+            detection_counts = {name: (det[:, -1] == i).sum() for i, name in enumerate(names)}
+            detection_counts_str = ', '.join(f'{k}: {v}' for k, v in detection_counts.items())
+
+            # Overlay the detection counts
+            cv2.putText(im0s, detection_counts_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+            # Overlay the total vehicle count
+            total_vehicle_count = f"Total vehicle: {df['Vehicle Object'].count()}"
+            cv2.putText(im0s, total_vehicle_count, (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+            # Overlay the total wrong vehicle count
+            total_wrong_vehicle_count = f"Total wrong vehicle: {df[df['Direction'] == 'wrong']['Vehicle Object'].count()}"
+            cv2.putText(im0s, total_wrong_vehicle_count, (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+            # new4: close
+
             if view_img:
                 if platform.system() == "Linux" and p not in windows:
                     windows.append(p)
