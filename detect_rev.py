@@ -70,6 +70,13 @@ from utils.torch_utils import select_device, smart_inference_mode
 from pyimagesearch.centroidtracker import CentroidTracker # new
 ct = CentroidTracker() # new
 
+# new3: open
+# Create a CSV file and write the header
+with open('vehicle_analysis.csv', 'w', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Time", "Vehicle Object", "Direction"])
+# new3: close
+
 @smart_inference_mode()
 def run(
     weights=ROOT / "yolov5s.pt",  # model path or triton URL
@@ -295,17 +302,15 @@ def run(
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
-                    # # Get the bounding box coordinates for the object
-                    # x1, y1, x2, y2 = objects[objectID][1]  # new_get the bounding box coordinates from the objects dictionary
+                    # Get the bounding box coordinates for the object
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
-    
-
-                    # # Save the full image
-                    # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
-
-                    # # Crop the image to the bounding box and save
-                    # vehicle = im0[y1:y2, x1:x2]
-                    # cv2.imwrite(f'wrong_direction_vehicle_{objectID}.jpg', vehicle)
+                
+                # new3: open
+                # Write the data into the CSV file
+                with open('vehicle_analysis.csv', 'a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([frame, objectID, text])
+                # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
@@ -392,6 +397,7 @@ def parse_opt():
 def main(opt):
     check_requirements(ROOT / "requirements.txt", exclude=("tensorboard", "thop"))
     run(**vars(opt))
+
 
 
 if __name__ == "__main__":
