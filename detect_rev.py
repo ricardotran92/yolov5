@@ -233,8 +233,7 @@ def run(
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
 
                     if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
-                        # rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
-                        rects.append((box_dimension, (x1, y1, x2, y2)))  # new2_if box enters the ROI, save its box for tracking along with its bounding box coordinates
+                        rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
 
                     if save_csv:
                         write_to_csv(p.name, label, confidence_str)
@@ -262,8 +261,7 @@ def run(
             # Stream results
             im0 = annotator.result()
 
-            # objects, CY1, CY2 = ct.update(rects)  # new_send the box to tracker
-            objects, CY1, CY2 = ct.update([rect[0] for rect in rects])  # new_send the box to tracker
+            objects, CY1, CY2 = ct.update(rects)  # new_send the box to tracker
             
             # new_open
             def save_images_wrongDirection(im0, x1, y1, x2, y2, objectID):
@@ -294,9 +292,8 @@ def run(
 
                     # # Get the bounding box coordinates for the object
                     # save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
-                    for rect in rects:
-                        if rect[0] == (x1, y1, x2, y2):
-                            save_images_wrongDirection(im0, *rect[1], objectID) # capture the image when vehicle go wrong direction
+                    x1, y1, x2, y2 = objects[objectID][1]  # new_get the bounding box coordinates from the objects dictionary
+                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
     
 
                     # # Save the full image
