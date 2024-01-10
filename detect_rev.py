@@ -326,7 +326,7 @@ def run(
                 
                 # new3: open
                 # Calculate the time in seconds
-                time_in_seconds = i / frame_rate # new3
+                time_in_seconds = frame / frame_rate # new3
 
                 # Convert the time to hours, minutes, seconds, and milliseconds
                 time_str = str(timedelta(seconds=int(time_in_seconds))) + str(int((time_in_seconds % 1) * 1000)) + "ms"
