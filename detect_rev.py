@@ -178,10 +178,6 @@ def run(
                 writer.writerow(data)
 
         rects = [] # new
-        # Initialize trackableObjects as an empty dictionary # new2
-        trackableObjects = {} # new2
-        # Initialize maxObjectID as 0 # new2
-        maxObjectID = 0 # new2
         
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -227,15 +223,6 @@ def run(
                     y2 = int(xyxy[3].detach().cpu().numpy()) # new
                     box_dimension = (x1,y1,x2,y2) # new
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
-
-                    # Update trackableObjects # new2
-                    # objectID = len(trackableObjects)  # new2_Generate a new objectID
-                    # trackableObjects[objectID] = box_dimension # new2
-                    objectID = maxObjectID  # Assign a new objectID
-                    trackableObjects[objectID] = box_dimension
-
-                    # Update maxObjectID
-                    maxObjectID += 1 # new2
 
                     if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
                         rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
@@ -289,9 +276,9 @@ def run(
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
                     # Get the bounding box coordinates for the object
-                    x1, y1, x2, y2 = trackableObjects[objectID]
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
-                    
+    
+
                     # # Save the full image
                     # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
 
