@@ -328,7 +328,9 @@ def run(
                 #     recorded_objects.add(objectID)
                     
                 # Update the DataFrame only if the object hasn't been recorded as 'wrong' yet
+                print(f"ObjectID: {objectID}, Text: {text}")
                 if df.loc[df['Vehicle Object'] == objectID, 'Direction'].ne('wrong').any():
+                    print("Condition met, updating DataFrame")
                     df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
                 # new3: close
 
