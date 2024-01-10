@@ -328,17 +328,32 @@ def run(
                 #     recorded_objects.add(objectID)
                     
                 # Update the DataFrame only if the object hasn't been recorded as 'wrong' yet
-                # Check if the objectID exists in the DataFrame
-                if objectID in df['Vehicle Object'].values:
+                
+                # Check if the objectID doesn't exist, add a new entry
+                if objectID not in df['Vehicle Object'].values:
+                    # df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
+                    new_row = pd.DataFrame({"Time": [time.time()], "Vehicle Object": [objectID], "Direction": [text]})
+                    df = pd.concat([df, new_row], ignore_index=True)
+                    
+                # If the objectID exists in the DataFrame
+                else:
                     # If the objectID exists, get the index of its entry
                     index = df[df['Vehicle Object'] == objectID].index[0]
 
                     # Update the 'Direction' of the existing entry only if it's not 'wrong'
                     if df.loc[index, 'Direction'] != 'wrong':
                         df.loc[index, 'Direction'] = text
-                else:
-                    # If the objectID doesn't exist, add a new entry
-                    df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
+                
+                # objectID in df['Vehicle Object'].values:
+                #     # If the objectID exists, get the index of its entry
+                #     index = df[df['Vehicle Object'] == objectID].index[0]
+
+                #     # Update the 'Direction' of the existing entry only if it's not 'wrong'
+                #     if df.loc[index, 'Direction'] != 'wrong':
+                #         df.loc[index, 'Direction'] = text
+                # else:
+                    
+                    
                 # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
