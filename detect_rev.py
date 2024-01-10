@@ -178,6 +178,14 @@ def run(
                 writer.writerow(data)
 
         rects = [] # new
+
+        def save_images_wrongDirection(im0, x1, y1, x2, y2, objectID): # new2
+            # Save the frame when a vehicle is going in the 'wrong' direction
+            cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
+
+            # Crop the image to the bounding box and save for vehicle go wrong direction
+            vehicle = im0[y1:y2, x1:x2]
+            cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
         
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -240,6 +248,13 @@ def run(
                         c = int(cls)  # integer class
                         label = None if hide_labels else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
                         annotator.box_label(xyxy, label, color=colors(c, True))
+
+                        # new2: open
+                        # Capture the image when the label is one of the specified types and the vehicle is going in the wrong direction
+                        if label in ["motorbike", "truck", "bus"] and 'wrong' in text.lower():
+                            save_images_wrongDirection(im0, x1, y1, x2, y2, objectID)
+                        # new2: close
+
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
 
@@ -275,8 +290,8 @@ def run(
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
-                    # Get the bounding box coordinates for the object
-                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
+                    # # Get the bounding box coordinates for the object
+                    # save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
     
 
                     # # Save the full image
