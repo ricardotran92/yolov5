@@ -73,15 +73,16 @@ from pyimagesearch.centroidtracker import CentroidTracker # new
 ct = CentroidTracker() # new
 
 # new3: open
-# Create a CSV file and write the header
-with open('vehicle_analysis.csv', 'w', newline='') as file:
-    writer = csv.writer(file)
-    writer.writerow(["Time", "Vehicle Object", "Direction"])
+# # Create a CSV file and write the header
+# with open('vehicle_analysis.csv', 'w', newline='') as file:
+#     writer = csv.writer(file)
+#     writer.writerow(["Time", "Vehicle Object", "Direction"])
 
 # # Create a set to store the IDs of recorded objects
 # recorded_objects = set() # new3
-# Create a DataFrame to store the data
-df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"])
+    
+# # Create a DataFrame to store the data
+# df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"])
 # new3: close
 
 @smart_inference_mode()
@@ -194,6 +195,9 @@ def run(
         rects = [] # new
         # Step 1: Initialize a dictionary to store bounding boxes of objects # new2
         bounding_boxes = {} # new2
+
+        # Create a DataFrame to store the data
+        df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"]) # new3
 
         # Process predictions
         for i, det in enumerate(pred):  # per image
