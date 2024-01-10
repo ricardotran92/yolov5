@@ -40,6 +40,7 @@ import cv2 # new2
 from pathlib import Path # new2
 import time # new3
 import pandas as pd # new3
+from datetime import timedelta # new3
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -155,6 +156,12 @@ def run(
     df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"]) # new3
 
     for path, im, im0s, vid_cap, s in dataset:
+        # Get the frame rate # new3
+        if vid_cap is not None:
+            frame_rate = vid_cap.get(cv2.CAP_PROP_FPS)
+        else:
+            frame_rate = None
+
         with dt[0]:
             im = torch.from_numpy(im).to(model.device)
             im = im.half() if model.fp16 else im.float()  # uint8 to fp16/32
@@ -318,21 +325,17 @@ def run(
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
                 
                 # new3: open
-                # # Write the data into the CSV file only if the object hasn't been recorded yet
-                # if objectID not in recorded_objects:
-                #     with open('vehicle_analysis.csv', 'a', newline='') as file:
-                #         writer = csv.writer(file)
-                #         writer.writerow([time.time(), objectID, text])
+                # Calculate the time in seconds
+                time_in_seconds = i / frame_rate # new3
 
-                #     # Add the object ID to the set of recorded objects
-                #     recorded_objects.add(objectID)
-                    
-                # Update the DataFrame only if the object hasn't been recorded as 'wrong' yet
+                # Convert the time to hours, minutes, seconds, and milliseconds
+                time_str = str(timedelta(seconds=int(time_in_seconds))) + str(int((time_in_seconds % 1) * 1000)) + "ms"
                 
                 # Check if the objectID doesn't exist, add a new entry
                 if objectID not in df['Vehicle Object'].values:
                     # df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
-                    new_row = pd.DataFrame({"Time": [time.time()], "Vehicle Object": [objectID], "Direction": [text]})
+                    # new_row = pd.DataFrame({"Time": [time.time()], "Vehicle Object": [objectID], "Direction": [text]})
+                    new_row = pd.DataFrame({"Time": [time_str], "Vehicle Object": [objectID], "Direction": [text]})
                     df = pd.concat([df, new_row], ignore_index=True)
                     
                 # If the objectID exists in the DataFrame
@@ -340,20 +343,10 @@ def run(
                     # If the objectID exists, get the index of its entry
                     index = df[df['Vehicle Object'] == objectID].index[0]
 
-                    # Update the 'Direction' of the existing entry only if it's not 'wrong'
+                    # Update the entry with the new direction
                     if df.loc[index, 'Direction'] != 'wrong':
-                        df.loc[index, 'Direction'] = text
-                
-                # objectID in df['Vehicle Object'].values:
-                #     # If the objectID exists, get the index of its entry
-                #     index = df[df['Vehicle Object'] == objectID].index[0]
-
-                #     # Update the 'Direction' of the existing entry only if it's not 'wrong'
-                #     if df.loc[index, 'Direction'] != 'wrong':
-                #         df.loc[index, 'Direction'] = text
-                # else:
-                    
-                    
+                        # df.loc[index, 'Direction'] = text
+                        df.loc[index] = [time_str, objectID, text]       
                 # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
