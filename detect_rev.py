@@ -38,6 +38,7 @@ from pathlib import Path
 import torch
 import cv2 # new2
 from pathlib import Path # new2
+import time # new3
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -188,6 +189,9 @@ def run(
         # Step 1: Initialize a dictionary to store bounding boxes of objects # new2
         bounding_boxes = {} # new2
 
+        # Create a set to store the IDs of recorded objects
+        recorded_objects = set() # new3
+
         # Process predictions
         for i, det in enumerate(pred):  # per image
             seen += 1
@@ -306,10 +310,14 @@ def run(
                     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
                 
                 # new3: open
-                # Write the data into the CSV file
-                with open('vehicle_analysis.csv', 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([frame, objectID, text])
+                # Write the data into the CSV file only if the object hasn't been recorded yet
+                if objectID not in recorded_objects:
+                    with open('vehicle_analysis.csv', 'a', newline='') as file:
+                        writer = csv.writer(file)
+                        writer.writerow([time.time(), objectID, text])
+
+                    # Add the object ID to the set of recorded objects
+                    recorded_objects.add(objectID)
                 # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
