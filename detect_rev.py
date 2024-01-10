@@ -178,6 +178,8 @@ def run(
                 writer.writerow(data)
 
         rects = [] # new
+        # Initialize trackableObjects as an empty dictionary # new2
+        trackableObjects = {} # new2
         
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -209,9 +211,6 @@ def run(
                 for c in det[:, 5].unique():
                     n = (det[:, 5] == c).sum()  # detections per class
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
-
-                # Initialize trackableObjects as an empty dictionary # new2
-                trackableObjects = {} # new2
                 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
