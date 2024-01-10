@@ -269,6 +269,10 @@ def run(
                     # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
                     cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
 
+                    # Crop the image to the bounding box and save for vehicle go wrong direction
+                    vehicle = im0[y1:y2, x1:x2]
+                    cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
+
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (0,ROI_MIN), (FRAME_WIDTH, ROI_MIN), (0,255,0), 3)
