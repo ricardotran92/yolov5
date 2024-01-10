@@ -180,6 +180,8 @@ def run(
         rects = [] # new
         # Initialize trackableObjects as an empty dictionary # new2
         trackableObjects = {} # new2
+        # Initialize maxObjectID as 0 # new2
+        maxObjectID = 0 # new2
         
         # Process predictions
         for i, det in enumerate(pred):  # per image
@@ -227,8 +229,13 @@ def run(
                     box_center = (y1+y2)/2   # new_we will check the movement of box center
 
                     # Update trackableObjects # new2
-                    objectID = len(trackableObjects)  # new2_Generate a new objectID
-                    trackableObjects[objectID] = box_dimension # new2
+                    # objectID = len(trackableObjects)  # new2_Generate a new objectID
+                    # trackableObjects[objectID] = box_dimension # new2
+                    objectID = maxObjectID  # Assign a new objectID
+                    trackableObjects[objectID] = box_dimension
+
+                    # Update maxObjectID
+                    maxObjectID += 1 # new2
 
                     if ((ROI_MIN <= box_center <= ROI_MAX) and (int(cls)==1 or int(cls)==2)): # new_In our dataset, only class 1 and 2 are vehicles
                         rects.append(box_dimension)  # new_if box enters the ROI, save its box for tracking
