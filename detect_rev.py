@@ -311,12 +311,12 @@ def run(
                 # draw both the ID of the object and the centroid of the
                 # object on the output frame
                 if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
-                    text = "{}".format('right')
+                    text = "{}".format('đúng chiều')
                     #text = "ID: {}".format(objectID)
-                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.5, color=(0,255, 0), thickness=4) # default font: 0.5
+                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2, color=(0,255, 0), thickness=3) # default font: 0.5
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
                 else:
-                    text = "{}".format('wrong')
+                    text = "{}".format('NGƯỢC CHIỀU')
                     #text = "ID: {}".format(objectID)
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
@@ -347,7 +347,7 @@ def run(
                     index = df[df['Vehicle Object'] == objectID].index[0]
 
                     # Update the entry with the new direction
-                    if df.loc[index, 'Direction'] != 'wrong':
+                    if df.loc[index, 'Direction'] != 'ngược chiều':
                         # df.loc[index, 'Direction'] = text
                         df.loc[index] = [time_str, objectID, text]       
                 # new3: close
@@ -367,11 +367,11 @@ def run(
             cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total vehicle count
-            total_vehicle_count = f"Total vehicle: {df['Vehicle Object'].count()}"
+            total_vehicle_count = f"Tổng số phương tiện: {df['Vehicle Object'].count()}"
             cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total wrong vehicle count
-            total_wrong_vehicle_count = f"Total wrong vehicle: {df[df['Direction'] == 'wrong']['Vehicle Object'].count()}"
+            total_wrong_vehicle_count = f"Tổng số phương tiện chạy ngược chiều: {df[df['Direction'] == 'ngược chiều']['Vehicle Object'].count()}"
             cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
             # new4: close
 
