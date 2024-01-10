@@ -36,6 +36,8 @@ import sys
 from pathlib import Path
 
 import torch
+import cv2 # new2
+from pathlib import Path # new2
 
 FILE = Path(__file__).resolve()
 ROOT = FILE.parents[0]  # YOLOv5 root directory
@@ -262,6 +264,10 @@ def run(
                     #text = "ID: {}".format(objectID)
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
+
+                    # Save the frame when a vehicle is going in the 'wrong' direction
+                    # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
+                    cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
