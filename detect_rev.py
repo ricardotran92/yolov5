@@ -249,6 +249,16 @@ def run(
             objects, CY1, CY2 = ct.update(rects)  # new_send the box to tracker
             
             # new_open
+
+            def save_images_wrongDirection(im0, x1, y1, x2, y2, objectID):
+                # Save the frame when a vehicle is going in the 'wrong' direction
+                # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
+                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
+
+                # Crop the image to the bounding box and save for vehicle go wrong direction
+                vehicle = im0[y1:y2, x1:x2]
+                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
+            
             for (objectID, centroid) in objects.items():
                 cy1=list(CY1.values())[objectID]
                 cy2=list(CY2.values())[objectID]
@@ -264,14 +274,7 @@ def run(
                     #text = "ID: {}".format(objectID)
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
-
-                    # Save the frame when a vehicle is going in the 'wrong' direction
-                    # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
-                    cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
-
-                    # Crop the image to the bounding box and save for vehicle go wrong direction
-                    vehicle = im0[y1:y2, x1:x2]
-                    cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
+                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
             cv2.line(im0, (FRAME_WIDTH - 5,ROI_MIN), (FRAME_WIDTH - 5, ROI_MAX), (0,255,0), 3)
