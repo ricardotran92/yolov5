@@ -361,7 +361,7 @@ def run(
             # new4: open
             # Get the detection counts
             detection_counts = {name: (det[:, -1] == i).sum() for i, name in enumerate(names)}
-            detection_counts_str = ', '.join(f'{names(k)}: {v}' for k, v in detection_counts.items())
+            detection_counts_str = ', '.join(f'{names[k]}: {v}' for k, v in detection_counts.items())
 
             # Overlay the detection counts
             cv2.putText(im0, detection_counts_str, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 0, 0), 2)
