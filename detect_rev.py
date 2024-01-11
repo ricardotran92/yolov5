@@ -295,12 +295,12 @@ def run(
                 if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
                     text = "{}".format('right-direction')
                     #text = "ID: {}".format(objectID)
-                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2, color=(0,255, 0), thickness=3)
+                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.0, color=(0,255, 0), thickness=2)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
                 else:
-                    text = "{}".format('opposite-direction')
+                    text = "{}".format('opp-dir')
                     #text = "ID: {}".format(objectID)
-                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
+                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0,0, 255), 3)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
                     # Get the bounding box coordinates for the object
@@ -329,7 +329,7 @@ def run(
                     index = df[df['Vehicle Object'] == objectID].index[0]
 
                     # Update the entry with the new direction
-                    if df.loc[index, 'Direction'] != '':
+                    if df.loc[index, 'Direction'] != 'opp-dir':
                         # df.loc[index, 'Direction'] = text
                         df.loc[index] = [time_str, objectID, text]       
                 # new3: close
@@ -346,15 +346,15 @@ def run(
             detection_counts_str = ', '.join(f'{names[k]}: {v}' for k, v in detection_counts.items())
 
             # Overlay the detection counts
-            cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
+            cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
 
             # Overlay the total vehicle count
             total_vehicle_count = f"Total vehicles: {df['Vehicle Object'].count()}"
-            cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
+            cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
 
             # Overlay the total wrong vehicle count
-            total_wrong_vehicle_count = f"Total wrong vehicles: {df[df['Direction'] == 'opposite-direction']['Vehicle Object'].count()}"
-            cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
+            total_wrong_vehicle_count = f"Total wrong vehicles: {df[df['Direction'] == 'opp-dir']['Vehicle Object'].count()}"
+            cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
             # new4: close
 
             if view_img:
