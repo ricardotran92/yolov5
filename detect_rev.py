@@ -73,18 +73,6 @@ from utils.torch_utils import select_device, smart_inference_mode
 from pyimagesearch.centroidtracker import CentroidTracker # new
 ct = CentroidTracker() # new
 
-# new3: open
-# # Create a CSV file and write the header
-# with open('vehicle_analysis.csv', 'w', newline='') as file:
-#     writer = csv.writer(file)
-#     writer.writerow(["Time", "Vehicle Object", "Direction"])
-
-# # Create a set to store the IDs of recorded objects
-# recorded_objects = set() # new3
-    
-# # Create a DataFrame to store the data
-# df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"])
-# new3: close
 
 @smart_inference_mode()
 def run(
@@ -270,12 +258,6 @@ def run(
                         label = None if hide_labels else (names[c] if hide_conf else f"{names[c]} {conf:.2f}")
                         annotator.box_label(xyxy, label, color=colors(c, True))
 
-                        # # new2: open
-                        # # Capture the image when the label is one of the specified types and the vehicle is going in the wrong direction
-                        # if label in ["motorbike", "truck", "bus"] and 'wrong' in text.lower():
-                        #     save_images_wrongDirection(im0, x1, y1, x2, y2, objectID)
-                        # # new2: close
-
                     if save_crop:
                         save_one_box(xyxy, imc, file=save_dir / "crops" / names[c] / f"{p.stem}.jpg", BGR=True)
 
@@ -285,14 +267,14 @@ def run(
             objects, CY1, CY2 = ct.update(rects)  # new_send the box to tracker
             
             # new_open
-            def save_images_wrongDirection(im0, x1, y1, x2, y2, objectID):
-                # Save the frame when a vehicle is going in the 'wrong' direction
+            def save_images_oppositeDirection(im0, x1, y1, x2, y2, objectID):
+                # Save the frame when a vehicle is going in the opposite-direction
                 # cv2.imwrite(f'wrong_direction_{objectID}.jpg', im0)
-                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_{objectID}.jpg', im0)
+                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/opposite_direction_{objectID}.jpg', im0)
 
-                # Crop the image to the bounding box and save for vehicle go wrong direction
+                # Crop the image to the bounding box and save for vehicle go opposite-direction
                 vehicle = im0[y1:y2, x1:x2]
-                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/wrong_direction_vehicle_{objectID}.jpg', vehicle)
+                cv2.imwrite(f'/content/drive/MyDrive/Colab Notebooks/DS201_Deep Learning in Data Science/vehicle detection/captures/opposite_direction_vehicle_{objectID}.jpg', vehicle)
             
             
             for (objectID, centroid) in objects.items():
@@ -311,18 +293,18 @@ def run(
                 # draw both the ID of the object and the centroid of the
                 # object on the output frame
                 if (cy2>=cy1):                  #check whether the vehicle is incoming or outgoing by checking the direction of movement
-                    text = "{}".format('dung_chieu')
+                    text = "{}".format('right-direction')
                     #text = "ID: {}".format(objectID)
-                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2, color=(0,255, 0), thickness=3) # default font: 0.5
+                    cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, fontScale=1.2, color=(0,255, 0), thickness=3)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
                 else:
-                    text = "{}".format('nguoc_chieu')
+                    text = "{}".format('opposite-direction')
                     #text = "ID: {}".format(objectID)
                     cv2.putText(im0, text, (centroid[0] - 10, centroid[1] - 10),cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,0, 255), 4)
                     cv2.circle(im0, (centroid[0], centroid[1]), 3, (0, 0, 255), -1)
 
                     # Get the bounding box coordinates for the object
-                    save_images_wrongDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go wrong direction
+                    save_images_oppositeDirection(im0, x1, y1, x2, y2, objectID) # capture the image when vehicle go opposite-direction
                 
                 # new3: open
                 # Calculate the time in seconds
@@ -367,11 +349,11 @@ def run(
             cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total vehicle count
-            total_vehicle_count = f"Tong xe: {df['Vehicle Object'].count()}"
+            total_vehicle_count = f"Total vehicles: {df['Vehicle Object'].count()}"
             cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
 
             # Overlay the total wrong vehicle count
-            total_wrong_vehicle_count = f"Tong xe nguoc_chieu: {df[df['Direction'] == 'nguoc_chieu']['Vehicle Object'].count()}"
+            total_wrong_vehicle_count = f"Total wrong vehicles: {df[df['Direction'] == 'opposite-direction']['Vehicle Object'].count()}"
             cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 2)
             # new4: close
 
