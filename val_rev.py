@@ -313,7 +313,7 @@ def run(
             'Precision': p,
             'Recall': r,
             'mAP@0.5': ap50,
-            'mAP@0.5:0.95': np.mean(ap) if ap else 0  # calculate mean if ap is not empty
+            'mAP@0.5:0.95': np.mean(ap) if np.any(ap) else 0  # calculate mean if any element in ap is non-zero
         })
 
     # new: open
