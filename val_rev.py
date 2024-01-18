@@ -249,6 +249,7 @@ def run(
             )
 
         # Metrics
+        ious = []  # new: Initialize list to store IoU for each image
         for si, pred in enumerate(preds):
             labels = targets[targets[:, 0] == si, 1:]
             nl, npr = labels.shape[0], pred.shape[0]  # number of labels, predictions
@@ -275,20 +276,11 @@ def run(
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 correct = process_batch(predn, labelsn, iouv)
-                ious = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values
-                print(f'Batch {batch_i} - Average IoU: {ious.mean()}') # new
+                ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
+                ious.append(ious_img)  # new: append to list
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
 
-                # new: Append the metrics to the list
-                metrics.append({
-                    'Batch': batch_i,
-                    'Average IoU': ious.mean(),
-                    'Precision': p,
-                    'Recall': r,
-                    'mAP@0.5': ap50,
-                    'mAP@0.5:0.95': np.mean(ap) if ap else 0  # calculate mean if ap is not empty
-                })
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls)
 
             # Save/log
@@ -305,6 +297,24 @@ def run(
             plot_images(im, output_to_target(preds), paths, save_dir / f"val_batch{batch_i}_pred.jpg", names)  # pred
 
         callbacks.run("on_val_batch_end", batch_i, im, targets, paths, shapes, preds)
+        
+        # new: Compute metrics for this batch
+        ious = np.concatenate(ious)  # concatenate all IoU values
+        # print(f'Batch {batch_i} - Average IoU: {ious.mean()}')  # print average IoU for this batch
+        batch_stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
+        if len(batch_stats) and batch_stats[0].any():
+            tp, fp, p, r, f1, ap, ap_class = ap_per_class(*batch_stats, plot=plots, save_dir=save_dir, names=names)
+            ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+
+        # new: Append the metrics to the list
+        metrics.append({
+            'Batch': batch_i,
+            'Average IoU': ious.mean(),
+            'Precision': p,
+            'Recall': r,
+            'mAP@0.5': ap50,
+            'mAP@0.5:0.95': np.mean(ap) if ap else 0  # calculate mean if ap is not empty
+        })
 
     # new: open
     # Define the columns for the DataFrame
