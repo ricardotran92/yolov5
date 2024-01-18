@@ -336,7 +336,7 @@ def run(
         # new: Store mean metrics for all classes
         metrics.append({
             'Class': 'All',
-            'IoU': avg_ious, # np.mean(ious)
+            'IoU': avg_ious,
             'Precision': mp,
             'Recall': mr,
             'AP@0.5': map50,
@@ -344,14 +344,9 @@ def run(
         })
     nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
-    # new: open
-    # Define the columns for the DataFrame
-    columns = ['Batch', 'Average IoU', 'Precision', 'Recall', 'mAP@0.5', 'mAP@0.5:0.95']
-
-    # Convert the metrics to a DataFrame and save to a CSV file
-    df = pd.DataFrame(metrics, columns=columns)
-    df.to_csv('rmetrics.csv', index=False)
-    # new: close
+    # new: Convert the metrics to a DataFrame and save to a CSV file
+    df = pd.DataFrame(metrics)
+    df.to_csv('metrics.csv', index=False)
     
     # Print results
     pf = "%22s" + "%11i" * 2 + "%11.3g" * 4  # print format
