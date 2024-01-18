@@ -275,7 +275,7 @@ def run(
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 correct = process_batch(predn, labelsn, iouv)
-                ious = correct[..., :iou.shape[0]].sum(2).cpu().numpy()  # new: get IoU values
+                ious = correct[..., :iouv.shape[0]].sum(2).cpu().numpy()  # new: get IoU values
                 print(f'Batch {batch_i} - Average IoU: {ious.mean()}') # new
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
