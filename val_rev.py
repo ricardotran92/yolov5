@@ -326,7 +326,7 @@ def run(
         metrics = []  # new: Initialize list to store metrics for each class
         for class_i in range(nc):
             metrics.append({
-                'Class': class_i,
+                'Class': names[class_i],
                 'IoU': ious[class_i],
                 'Precision': p[class_i],
                 'Recall': r[class_i],
