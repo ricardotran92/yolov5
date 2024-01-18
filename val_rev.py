@@ -324,19 +324,27 @@ def run(
         mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
         # new: Store metrics for each class
         metrics = []  # new: Initialize list to store metrics for each class
+        class_ious = []  # new: Initialize list to store average IoU for each class
         for class_i in range(nc):
+
+            class_indices = stats[3] == class_i  # new: get indices of images of this class
+            class_iou = ious[class_indices]  # new: get IoU values for this class
+            avg_class_iou = np.mean(class_iou)  # new: calculate average IoU for this class
+            class_ious.append(avg_class_iou)  # new: Append average IoU for this class to list
+
             metrics.append({
                 'Class': names[class_i],
-                'IoU': ious[class_i],
+                'IoU': avg_class_iou, # ious[class_i],
                 'Precision': p[class_i],
                 'Recall': r[class_i],
                 'AP@0.5': ap50[class_i],
                 'AP@0.5:0.95': ap[class_i]
             })
         # new: Store mean metrics for all classes
+        avg_class_ious = np.mean(class_ious)  # new: Calculate average of average IoUs for each class
         metrics.append({
             'Class': 'All',
-            'IoU': avg_ious,
+            'IoU': avg_class_ious # avg_ious,
             'Precision': mp,
             'Recall': mr,
             'AP@0.5': map50,
