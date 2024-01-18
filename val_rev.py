@@ -284,10 +284,10 @@ def run(
                 metrics.append({
                     'Batch': batch_i,
                     'Average IoU': ious.mean(),
-                    'Precision': p.mean(),
-                    'Recall': r.mean(),
-                    'mAP@0.5': ap50.mean(),
-                    'mAP@0.5:0.95': ap.mean()
+                    'Precision': p,
+                    'Recall': r,
+                    'mAP@0.5': ap50,
+                    'mAP@0.5:0.95': np.mean(ap) if ap else 0  # calculate mean if ap is not empty
                 })
             stats.append((correct, pred[:, 4], pred[:, 5], labels[:, 0]))  # (correct, conf, pcls, tcls)
 
