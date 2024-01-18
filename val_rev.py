@@ -219,9 +219,6 @@ def run(
     callbacks.run("on_val_start")
     pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
 
-    # new: Initialize the list of metrics
-    metrics = [] # new
-
     for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
         callbacks.run("on_val_batch_start")
         with dt[0]:
@@ -298,44 +295,69 @@ def run(
 
         callbacks.run("on_val_batch_end", batch_i, im, targets, paths, shapes, preds)
         
-        # new: Compute metrics for this batch
-        ious = np.concatenate(ious)  # concatenate all IoU values
-        # print(f'Batch {batch_i} - Average IoU: {ious.mean()}')  # print average IoU for this batch
-        batch_stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
-        if len(batch_stats) and batch_stats[0].any():
-            tp, fp, p, r, f1, ap, ap_class = ap_per_class(*batch_stats, plot=plots, save_dir=save_dir, names=names)
-            ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+        # # new: Compute metrics for this batch
+        # ious = np.concatenate(ious)  # concatenate all IoU values
+        # # print(f'Batch {batch_i} - Average IoU: {ious.mean()}')  # print average IoU for this batch
+        # batch_stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
+        # if len(batch_stats) and batch_stats[0].any():
+        #     tp, fp, p, r, f1, ap, ap_class = ap_per_class(*batch_stats, plot=plots, save_dir=save_dir, names=names)
+        #     ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
 
-        # new: Append the metrics to the list
+        # # new: Append the metrics to the list
+        # metrics.append({
+        #     'Batch': batch_i,
+        #     'Average IoU': ious.mean(),
+        #     'Precision': p,
+        #     'Recall': r,
+        #     'mAP@0.5': ap50,
+        #     'mAP@0.5:0.95': np.mean(ap) if np.any(ap) else 0  # calculate mean if any element in ap is non-zero
+        # })
+
+   
+    # Compute metrics
+    stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
+    metrics = []  # new: Initialize list to store metrics for each class
+    ious = []  # new: Initialize list to store IoUs for each class
+    if len(stats) and stats[0].any():
+        tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
+        ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
+        ious = np.concatenate(ious)  # concatenate all IoU values
+        avg_ious = ious.mean(axis=0)  # calculate average IoU
+        # new: Store metrics for each class
+        for class_i in range(nc):
+            metrics.append({
+                'Class': class_i,
+                'IoU': ious[class_i],
+                'Precision': p[class_i],
+                'Recall': r[class_i],
+                'AP@0.5': ap50[class_i],
+                'AP@0.5:0.95': ap[class_i]
+            })
+        # new: Store mean metrics for all classes
         metrics.append({
-            'Batch': batch_i,
-            'Average IoU': ious.mean(),
-            'Precision': p,
-            'Recall': r,
-            'mAP@0.5': ap50,
-            'mAP@0.5:0.95': np.mean(ap) if np.any(ap) else 0  # calculate mean if any element in ap is non-zero
+            'Class': 'All',
+            'IoU': avg_ious, # np.mean(ious)
+            'Precision': mp,
+            'Recall': mr,
+            'AP@0.5': map50,
+            'AP@0.5:0.95': map
         })
+    nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
 
     # new: open
     # Define the columns for the DataFrame
     columns = ['Batch', 'Average IoU', 'Precision', 'Recall', 'mAP@0.5', 'mAP@0.5:0.95']
 
-    # Convert the list of metrics to a DataFrame and save it as a CSV file
+    # Convert the metrics to a DataFrame and save to a CSV file
     df = pd.DataFrame(metrics, columns=columns)
-    df.to_csv('results.csv', index=False)
+    df.to_csv('rmetrics.csv', index=False)
     # new: close
     
-    # Compute metrics
-    stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
-    if len(stats) and stats[0].any():
-        tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
-        ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
-        mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
-    nt = np.bincount(stats[3].astype(int), minlength=nc)  # number of targets per class
-
     # Print results
     pf = "%22s" + "%11i" * 2 + "%11.3g" * 4  # print format
-    LOGGER.info(pf % ("all", seen, nt.sum(), mp, mr, map50, map))
+    # LOGGER.info(pf % ("all", seen, nt.sum(), mp, mr, map50, map))
+    LOGGER.info(pf % ("all", seen, nt.sum(), mp, mr, map50, map, avg_ious))  # add avg_ious to log
     if nt.sum() == 0:
         LOGGER.warning(f"WARNING ⚠️ no labels found in {task} set, can not compute metrics without labels")
 
