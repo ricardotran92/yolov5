@@ -219,6 +219,7 @@ def run(
     callbacks.run("on_val_start")
     pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
 
+    ious = []  # new: Initialize list to store IoU for each image
     for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
         callbacks.run("on_val_batch_start")
         with dt[0]:
@@ -246,7 +247,6 @@ def run(
             )
 
         # Metrics
-        ious = []  # new: Initialize list to store IoU for each image
         for si, pred in enumerate(preds):
             labels = targets[targets[:, 0] == si, 1:]
             nl, npr = labels.shape[0], pred.shape[0]  # number of labels, predictions
@@ -314,17 +314,16 @@ def run(
         # })
 
    
-    # Compute metrics
+    # Compute metrics for all batches
+    ious = np.concatenate(ious)  # new: concatenate all IoU values
+    avg_ious = np.mean(ious)  # calculate average IoU    
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
-    metrics = []  # new: Initialize list to store metrics for each class
-    ious = []  # new: Initialize list to store IoUs for each class
     if len(stats) and stats[0].any():
         tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
         ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
         mp, mr, map50, map = p.mean(), r.mean(), ap50.mean(), ap.mean()
-        ious = np.concatenate(ious)  # concatenate all IoU values
-        avg_ious = ious.mean(axis=0)  # calculate average IoU
         # new: Store metrics for each class
+        metrics = []  # new: Initialize list to store metrics for each class
         for class_i in range(nc):
             metrics.append({
                 'Class': class_i,
