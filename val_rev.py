@@ -279,9 +279,10 @@ def run(
                 ious_img = correct[..., :iouv.shape[0]].max(1).values.cpu().numpy()  # get max IoU values for this image
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
-                    class_ious_img = ious_img[class_indices]  # get IoU values for this class
-                    if class_ious_img.size > 0:  # check if there are any IoUs for this class
-                        class_ious[class_i].append(class_ious_img.max())  # append max IoU for this class
+                    if class_indices.any():  # check if there are any labels of this class
+                        class_ious_img = ious_img[class_indices]  # get IoU values for this class
+                        if class_ious_img.size > 0:  # check if there are any IoUs for this class
+                            class_ious[class_i].append(class_ious_img.max())  # append max IoU for this class
 
                 
                 if plots:
