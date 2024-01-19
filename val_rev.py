@@ -280,9 +280,7 @@ def run(
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     if class_indices.any():  # check if there are any labels of this class
-                        # Pad ious_img with zeros to match the length of class_indices
-                        ious_img_padded = np.pad(ious_img, (0, max(0, len(class_indices) - len(ious_img))), 'constant', constant_values=0)
-                        class_ious_img = [ious_img_padded[i] for i in range(len(class_indices)) if class_indices[i]]  # get IoU values for this class
+                        class_ious_img = [ious_img[i] for i in range(len(ious_img)) if class_indices[i]]  # get IoU values for this class
                         if len(class_ious_img) > 0:  # check if there are any IoUs for this class
                             class_ious[class_i].append(max(class_ious_img))  # append max IoU for this class
 
