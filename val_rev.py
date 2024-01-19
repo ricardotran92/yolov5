@@ -280,7 +280,7 @@ def run(
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     if class_indices.any():  # check if there are any labels of this class
-                        class_ious_img = [ious_img[i] for i in range(len(ious_img)) if class_indices[i]]  # get IoU values for this class
+                        class_ious_img = [ious_img[i] for i in range(min(len(ious_img), len(class_indices))) if class_indices[i]]  # get IoU values for this class
                         if len(class_ious_img) > 0:  # check if there are any IoUs for this class
                             class_ious[class_i].extend(class_ious_img)  # append all IoUs for this class
 
