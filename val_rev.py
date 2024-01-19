@@ -344,7 +344,7 @@ def run(
         avg_class_ious = np.mean(class_ious)  # new: Calculate average of average IoUs for each class
         metrics.append({
             'Class': 'All',
-            'IoU': avg_class_ious # avg_ious,
+            'IoU': avg_class_ious, # avg_ious,
             'Precision': mp,
             'Recall': mr,
             'AP@0.5': map50,
