@@ -114,7 +114,8 @@ def process_batch(detections, labels, iouv):
                 matches = matches[np.unique(matches[:, 0], return_index=True)[1]]
             correct[matches[:, 1].astype(int), i] = True
             iou_values[matches[:, 1].astype(int)] = matches[:, 2]  # new2: store IoU values
-    return torch.tensor(correct, dtype=torch.bool, device=iouv.device)
+    # return torch.tensor(correct, dtype=torch.bool, device=oriouv.device) # original
+    return torch.tensor(correct, dtype=torch.bool, device=iouv.device), iou_values
 
 
 @smart_inference_mode()
@@ -276,7 +277,7 @@ def run(
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
-                # correct = process_batch(predn, labelsn, iouv) # original code
+                # correct = process_batch(predn, labelsn, iouv) # original
                 correct, iou_values = process_batch(predn, labelsn, iouv)  # new2: get IoU values
                 ious.extend(iou_values)  # new2: add IoU values to list
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
