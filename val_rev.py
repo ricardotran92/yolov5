@@ -277,6 +277,8 @@ def run(
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
                 # ious.append(ious_img)  # new: append to list
                 ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
+                # Flatten the array and append to list of independent IoUs for all images
+                ious.extend(ious_img.flatten()) # new2
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     if class_indices.any():  # check if there are any labels of this class
@@ -307,6 +309,7 @@ def run(
         
     # After your loop:
     avg_class_ious = [np.mean(ious) if ious else 0 for ious in class_ious]  # calculate average IoU for each class
+    avg_iou = np.mean(ious) # new2
 
     
     # Compute metrics for all batches
@@ -332,6 +335,16 @@ def run(
         metrics.append({
             'Class': 'All',
             'IoU': avg_ious,
+            'Precision': mp,
+            'Recall': mr,
+            'AP@0.5': map50,
+            'AP@0.5:0.95': map
+        })
+
+        # Store mean metrics for all classes
+        metrics.append({
+            'Class': 'All',
+            'IoU': avg_iou,  # use average IoU for the entire dataset
             'Precision': mp,
             'Recall': mr,
             'AP@0.5': map50,
