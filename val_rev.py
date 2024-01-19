@@ -276,13 +276,13 @@ def run(
                 correct = process_batch(predn, labelsn, iouv)
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
                 # ious.append(ious_img)  # new: append to list
-                ious_img = correct[..., :iouv.shape[0]].max(1).values.cpu().numpy()  # get max IoU values for this image
+                ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     if class_indices.any():  # check if there are any labels of this class
                         class_ious_img = [ious_img[i] for i in range(len(ious_img)) if class_indices[i]]  # get IoU values for this class
                         if len(class_ious_img) > 0:  # check if there are any IoUs for this class
-                            class_ious[class_i].append(max(class_ious_img))  # append max IoU for this class
+                            class_ious[class_i].extend(class_ious_img)  # append all IoUs for this class
 
                 
                 if plots:
@@ -307,9 +307,9 @@ def run(
         
     # After your loop:
     avg_class_ious = [np.mean(ious) if ious else 0 for ious in class_ious]  # calculate average IoU for each class
+
     
     # Compute metrics for all batches
-    ious = np.concatenate(ious)  # new: concatenate all IoU values
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
     if len(stats) and stats[0].any():
         tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
@@ -328,10 +328,10 @@ def run(
                 'AP@0.5:0.95': ap[class_i]
             })
         # new: Store mean metrics for all classes
-        avg_class_ious = np.mean(class_ious)  # new: Calculate average of average IoUs for each class
+        avg_ious = np.mean(avg_class_ious)  # Calculate average of average IoUs for each class
         metrics.append({
             'Class': 'All',
-            'IoU': avg_class_ious, # avg_ious,
+            'IoU': avg_ious,
             'Precision': mp,
             'Recall': mr,
             'AP@0.5': map50,
