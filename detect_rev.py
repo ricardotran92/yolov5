@@ -285,7 +285,12 @@ def run(
                 # Step 2: Store bounding box of new objects
                 for rect in rects:
                     # if objectID not in bounding_boxes:  # Check if the object is new
-                        bounding_boxes[objectID] = rect
+                    #     bounding_boxes[objectID] = rect
+                    (rx1, ry1, rx2, ry2) = rect  # Get the bounding box of the current detection
+
+                    # Check if the current centroid is inside this bounding box
+                    if rx1 <= centroid[0] <= rx2 and ry1 <= centroid[1] <= ry2:
+                        bounding_boxes[objectID] = rect  # Update the bounding box
 
                 (x1, y1, x2, y2) = bounding_boxes[objectID]  # Retrieve bounding box of object
                 # new2: close
