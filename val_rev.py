@@ -97,8 +97,10 @@ def process_batch(detections, labels, iouv):
         labels (array[M, 5]), class, x1, y1, x2, y2
     Returns:
         correct (array[N, 10]), for 10 IoU levels
+        iou_values (array[N]), IoU values for each detection # new2
     """
     correct = np.zeros((detections.shape[0], iouv.shape[0])).astype(bool)
+    iou_values = np.zeros((detections.shape[0],))  # new2: initialize IoU values
     iou = box_iou(labels[:, 1:], detections[:, :4])
     correct_class = labels[:, 0:1] == detections[:, 5]
     for i in range(len(iouv)):
@@ -111,6 +113,7 @@ def process_batch(detections, labels, iouv):
                 # matches = matches[matches[:, 2].argsort()[::-1]]
                 matches = matches[np.unique(matches[:, 0], return_index=True)[1]]
             correct[matches[:, 1].astype(int), i] = True
+            iou_values[matches[:, 1].astype(int)] = matches[:, 2]  # new2: store IoU values
     return torch.tensor(correct, dtype=torch.bool, device=iouv.device)
 
 
@@ -273,13 +276,13 @@ def run(
                 tbox = xywh2xyxy(labels[:, 1:5])  # target boxes
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
-                correct = process_batch(predn, labelsn, iouv)
+                # correct = process_batch(predn, labelsn, iouv) # original code
+                correct, iou_values = process_batch(predn, labelsn, iouv)  # new2: get IoU values
+                ious.extend(iou_values)  # new2: add IoU values to list
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
                 # ious.append(ious_img)  # new: append to list
                 ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
                 # Flatten the array and append to list of independent IoUs for all images
-                ious.extend(ious_img.flatten()) # new2
-                print(f"IoU values for image {si}: {ious_img}")  # new2 Debug: print IoU values for each image
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     if class_indices.any():  # check if there are any labels of this class
@@ -310,9 +313,7 @@ def run(
         
     # After your loop:
     avg_class_ious = [np.mean(ious) if ious else 0 for ious in class_ious]  # calculate average IoU for each class
-    avg_iou = np.mean(ious) # new2
-    print(f"Average IoU for whole dataset: {avg_iou}")  # new2 Debug: print average IoU for whole dataset
-
+    avg_iou = np.mean(ious) # new2 calculate average IoU
     
     # Compute metrics for all batches
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
