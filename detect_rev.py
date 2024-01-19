@@ -284,7 +284,7 @@ def run(
                 # new2: open
                 # Step 2: Store bounding box of new objects
                 for rect in rects:
-                    if objectID not in bounding_boxes:  # Check if the object is new
+                    # if objectID not in bounding_boxes:  # Check if the object is new
                         bounding_boxes[objectID] = rect
 
                 (x1, y1, x2, y2) = bounding_boxes[objectID]  # Retrieve bounding box of object
