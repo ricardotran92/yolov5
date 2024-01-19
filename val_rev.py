@@ -276,7 +276,7 @@ def run(
                 correct = process_batch(predn, labelsn, iouv)
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
                 # ious.append(ious_img)  # new: append to list
-                ious_img = correct[..., :iouv.shape[0]].max(1).cpu().numpy()  # get max IoU values for this image
+                ious_img = correct[..., :iouv.shape[0]].max(1).values.cpu().numpy()  # get max IoU values for this image
                 for class_i in range(nc):  # loop over each class
                     class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
                     class_ious_img = ious_img[class_indices]  # get IoU values for this class
