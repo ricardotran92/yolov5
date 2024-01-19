@@ -220,6 +220,7 @@ def run(
     pbar = tqdm(dataloader, desc=s, bar_format=TQDM_BAR_FORMAT)  # progress bar
 
     ious = []  # new: Initialize list to store IoU for each image
+    class_ious = [[] for _ in range(nc)]  # new: Initialize class-wise IoU lists
     for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
         callbacks.run("on_val_batch_start")
         with dt[0]:
@@ -273,8 +274,14 @@ def run(
                 scale_boxes(im[si].shape[1:], tbox, shape, shapes[si][1])  # native-space labels
                 labelsn = torch.cat((labels[:, 0:1], tbox), 1)  # native-space labels
                 correct = process_batch(predn, labelsn, iouv)
-                ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
-                ious.append(ious_img)  # new: append to list
+                # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
+                # ious.append(ious_img)  # new: append to list
+                ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
+                for class_i in range(nc):  # new: loop over each class
+                    class_indices = (labelsn[:, 0] == class_i)  # new: get indices of labels of this class
+                    class_ious_img = ious_img[class_indices]  # new: get IoU values for this class
+                    class_ious[class_i].extend(class_ious_img)  # new: append to class-wise list
+                
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
 
@@ -295,25 +302,9 @@ def run(
 
         callbacks.run("on_val_batch_end", batch_i, im, targets, paths, shapes, preds)
         
-        # # new: Compute metrics for this batch
-        # ious = np.concatenate(ious)  # concatenate all IoU values
-        # # print(f'Batch {batch_i} - Average IoU: {ious.mean()}')  # print average IoU for this batch
-        # batch_stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
-        # if len(batch_stats) and batch_stats[0].any():
-        #     tp, fp, p, r, f1, ap, ap_class = ap_per_class(*batch_stats, plot=plots, save_dir=save_dir, names=names)
-        #     ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
-
-        # # new: Append the metrics to the list
-        # metrics.append({
-        #     'Batch': batch_i,
-        #     'Average IoU': ious.mean(),
-        #     'Precision': p,
-        #     'Recall': r,
-        #     'mAP@0.5': ap50,
-        #     'mAP@0.5:0.95': np.mean(ap) if np.any(ap) else 0  # calculate mean if any element in ap is non-zero
-        # })
-
-   
+    # After your loop:
+    avg_class_ious = [np.mean(ious) if ious else 0 for ious in class_ious]  # calculate average IoU for each class
+    
     # Compute metrics for all batches
     ious = np.concatenate(ious)  # new: concatenate all IoU values
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
@@ -324,15 +315,10 @@ def run(
         # new: Store metrics for each class
         metrics = []  # new: Initialize list to store metrics for each class
         class_ious = []  # new: Initialize list to store average IoU for each class
-        class_labels = detections[..., -1].astype(int)  # new: get class labels of detections
         for class_i in range(nc):
-            class_indices = class_labels == class_i  # new: get indices of detections of this class
-            class_iou = ious[class_indices]  # new: get IoU values for this class
-            avg_class_iou = np.mean(class_iou)  # new: calculate average IoU for this class
-            class_ious.append(avg_class_iou)  # new: Append average IoU for this class to list
             metrics.append({
                 'Class': names[class_i],
-                'IoU': avg_class_iou, # ious[class_i],
+                'IoU': avg_class_ious[class_i],  # use average class-wise IoU
                 'Precision': p[class_i],
                 'Recall': r[class_i],
                 'AP@0.5': ap50[class_i],
@@ -487,3 +473,24 @@ def main(opt):
 if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
+
+
+
+
+        ## area: for batch_i, (im, targets, paths, shapes) in enumerate(pbar):
+        # # new: Compute metrics for this batch
+        # ious = np.concatenate(ious)  # concatenate all IoU values
+        # batch_stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
+        # if len(batch_stats) and batch_stats[0].any():
+        #     tp, fp, p, r, f1, ap, ap_class = ap_per_class(*batch_stats, plot=plots, save_dir=save_dir, names=names)
+        #     ap50, ap = ap[:, 0], ap.mean(1)  # AP@0.5, AP@0.5:0.95
+
+        # # new: Append the metrics to the list
+        # metrics.append({
+        #     'Batch': batch_i,
+        #     'Average IoU': ious.mean(),
+        #     'Precision': p,
+        #     'Recall': r,
+        #     'mAP@0.5': ap50,
+        #     'mAP@0.5:0.95': np.mean(ap) if np.any(ap) else 0  # calculate mean if any element in ap is non-zero
+        # })
