@@ -276,12 +276,11 @@ def run(
                 correct = process_batch(predn, labelsn, iouv)
                 # ious_img = correct[..., :iouv.shape[0]].sum(1).cpu().numpy()  # new: get IoU values for this image
                 # ious.append(ious_img)  # new: append to list
-                ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
-                for class_i in range(nc):  # new: loop over each class
-                    class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # new: get indices of labels of this class
-                    class_ious_img = ious_img[class_indices]  # new: get IoU values for this class
-                    class_ious[class_i].extend(class_ious_img)  # new: append to class-wise list
-
+                ious_img = correct[..., :iouv.shape[0]].max(1).cpu().numpy()  # get max IoU values for this image
+                for class_i in range(nc):  # loop over each class
+                    class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # get indices of labels of this class
+                    class_ious_img = ious_img[class_indices].max()  # get max IoU value for this class
+                    class_ious[class_i].append(class_ious_img)  # append to class-wise list
                 
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
