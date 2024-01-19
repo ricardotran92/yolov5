@@ -278,9 +278,10 @@ def run(
                 # ious.append(ious_img)  # new: append to list
                 ious_img = correct[..., :iouv.shape[0]].cpu().numpy()  # get IoU values for this image
                 for class_i in range(nc):  # new: loop over each class
-                    class_indices = (labelsn[:, 0] == class_i).cpu().numpy()  # new: get indices of labels of this class
+                    class_indices = (labelsn[:, 0].cpu().numpy() == class_i)  # new: get indices of labels of this class
                     class_ious_img = ious_img[class_indices]  # new: get IoU values for this class
                     class_ious[class_i].extend(class_ious_img)  # new: append to class-wise list
+
                 
                 if plots:
                     confusion_matrix.process_batch(predn, labelsn)
