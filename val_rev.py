@@ -316,7 +316,6 @@ def run(
    
     # Compute metrics for all batches
     ious = np.concatenate(ious)  # new: concatenate all IoU values
-    avg_ious = np.mean(ious)  # calculate average IoU    
     stats = [torch.cat(x, 0).cpu().numpy() for x in zip(*stats)]  # to numpy
     if len(stats) and stats[0].any():
         tp, fp, p, r, f1, ap, ap_class = ap_per_class(*stats, plot=plots, save_dir=save_dir, names=names)
@@ -325,13 +324,12 @@ def run(
         # new: Store metrics for each class
         metrics = []  # new: Initialize list to store metrics for each class
         class_ious = []  # new: Initialize list to store average IoU for each class
+        class_labels = detections[..., -1].astype(int)  # new: get class labels of detections
         for class_i in range(nc):
-
-            class_indices = stats[3] == class_i  # new: get indices of images of this class
+            class_indices = class_labels == class_i  # new: get indices of detections of this class
             class_iou = ious[class_indices]  # new: get IoU values for this class
             avg_class_iou = np.mean(class_iou)  # new: calculate average IoU for this class
             class_ious.append(avg_class_iou)  # new: Append average IoU for this class to list
-
             metrics.append({
                 'Class': names[class_i],
                 'IoU': avg_class_iou, # ious[class_i],
