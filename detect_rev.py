@@ -376,12 +376,22 @@ def run(
             # Overlay the detection counts
             cv2.putText(im0, detection_counts_str, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
 
+            # new5 Get the class counts
+            class_counts = df['Class'].value_counts()
+            class_counts_str = ', '.join(f'{k}: {v}' for k, v in class_counts.items())
+            
             # Overlay the total vehicle count
-            total_vehicle_count = f"Total vehicles: {df['Vehicle Object'].count()}"
+            # total_vehicle_count = f"Total vehicles: {df['Vehicle Object'].count()}"
+            total_vehicle_count = f"Total vehicles: {df['Vehicle Object'].count()} ({class_counts_str})"
             cv2.putText(im0, total_vehicle_count, (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
 
+            # new5 Get the wrong class counts
+            wrong_class_counts = df[df['Direction'] == 'opp-dir']['Class'].value_counts()
+            wrong_class_counts_str = ', '.join(f'{k}: {v}' for k, v in wrong_class_counts.items())
+            
             # Overlay the total wrong vehicle count
-            total_wrong_vehicle_count = f"Total wrong vehicles: {df[df['Direction'] == 'opp-dir']['Vehicle Object'].count()}"
+            # total_wrong_vehicle_count = f"Total traffic violent records: {df[df['Direction'] == 'opp-dir']['Vehicle Object'].count()}"
+            total_wrong_vehicle_count = f"Total traffic violent records: {df[df['Direction'] == 'opp-dir']['Vehicle Object'].count()} ({wrong_class_counts_str})"
             cv2.putText(im0, total_wrong_vehicle_count, (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 0, 255), 3)
             # new4: close
 
