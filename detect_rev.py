@@ -320,15 +320,21 @@ def run(
 
                 # Format the time string
                 time_str = str(time_obj)
+              
+                # Initialize object_class
+                object_class = None # new5
 
-                # Get the class index of the detected object
-                class_index = int(det[-1]) # new5
-
-                # Get the class name of the detected object
-                object_class = names[class_index] # new5
-                
                 # Check if the objectID doesn't exist, add a new entry
                 if objectID not in df['Vehicle Object'].values:
+                    # new5: open
+                    # Iterate over the detected objects
+                    for *xyxy, conf, cls in reversed(det):
+                        # Get the class index of the detected object
+                        class_index = int(cls)
+
+                        # Get the class name of the detected object
+                        object_class = names[class_index]
+                    # new5: close
                     new_row = pd.DataFrame({"Time": [time_str], "Vehicle Object": [objectID], "Class": [object_class], "Direction": [text]})
                     df = pd.concat([df, new_row], ignore_index=True)
                     
