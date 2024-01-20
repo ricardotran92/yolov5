@@ -141,7 +141,7 @@ def run(
     seen, windows, dt = 0, [], (Profile(device=device), Profile(device=device), Profile(device=device))
     
     # Create a DataFrame to store the data
-    df = pd.DataFrame(columns=["Time", "Vehicle Object", "Direction"]) # new3
+    df = pd.DataFrame(columns=["Time", "Vehicle Object", "Class","Direction"]) # new3
 
     for path, im, im0s, vid_cap, s in dataset:
         # Get the frame rate # new3
