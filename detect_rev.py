@@ -281,19 +281,45 @@ def run(
                 cy1=list(CY1.values())[objectID]
                 cy2=list(CY2.values())[objectID]
 
-                # new2: open
-                # Step 2: Store bounding box of new objects
-                for rect in rects:
-                    # if objectID not in bounding_boxes:  # Check if the object is new
-                    #     bounding_boxes[objectID] = rect
-                    (rx1, ry1, rx2, ry2) = rect  # Get the bounding box of the current detection
+                # # new2: open
+                # # Step 2: Store bounding box of new objects
+                # for rect in rects:
+                #     # if objectID not in bounding_boxes:  # Check if the object is new
+                #     #     bounding_boxes[objectID] = rect
+                #     (rx1, ry1, rx2, ry2) = rect  # Get the bounding box of the current detection
+
+                #     # Check if the current centroid is inside this bounding box
+                #     if rx1 <= centroid[0] <= rx2 and ry1 <= centroid[1] <= ry2:
+                #         bounding_boxes[objectID] = rect  # Update the bounding box
+
+                # (x1, y1, x2, y2) = bounding_boxes[objectID]  # Retrieve bounding box of object
+                # # new2: close
+
+                # new5: open
+                # Initialize object_class
+                object_class = None
+
+                # Iterate over the detected objects
+                for *xyxy, conf, cls in reversed(det):
+                    # Get the class index of the detected object
+                    class_index = int(cls)
+
+                    # Get the class name of the detected object
+                    object_class = names[class_index]
+
+                    # Convert bounding box from yolo format to rectangle format
+                    x1, y1, x2, y2 = [int(x.item()) for x in xyxy]
 
                     # Check if the current centroid is inside this bounding box
-                    if rx1 <= centroid[0] <= rx2 and ry1 <= centroid[1] <= ry2:
-                        bounding_boxes[objectID] = rect  # Update the bounding box
+                    if x1 <= centroid[0] <= x2 and y1 <= centroid[1] <= y2:
+                        # Update the bounding box and class
+                        bounding_boxes[objectID] = (x1, y1, x2, y2, object_class)
 
-                (x1, y1, x2, y2) = bounding_boxes[objectID]  # Retrieve bounding box of object
-                # new2: close
+                # Retrieve bounding box of object and its class
+                x1, y1, x2, y2, object_class = bounding_boxes[objectID]
+
+                # new5: close
+
 
                 # draw both the ID of the object and the centroid of the
                 # object on the output frame
@@ -320,21 +346,9 @@ def run(
 
                 # Format the time string
                 time_str = str(time_obj)
-              
-                # Initialize object_class
-                object_class = None # new5
-
+                
                 # Check if the objectID doesn't exist, add a new entry
                 if objectID not in df['Vehicle Object'].values:
-                    # new5: open
-                    # Iterate over the detected objects
-                    for *xyxy, conf, cls in reversed(det):
-                        # Get the class index of the detected object
-                        class_index = int(cls)
-
-                        # Get the class name of the detected object
-                        object_class = names[class_index]
-                    # new5: close
                     new_row = pd.DataFrame({"Time": [time_str], "Vehicle Object": [objectID], "Class": [object_class], "Direction": [text]})
                     df = pd.concat([df, new_row], ignore_index=True)
                     
