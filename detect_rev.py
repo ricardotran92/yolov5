@@ -320,12 +320,16 @@ def run(
 
                 # Format the time string
                 time_str = str(time_obj)
+
+                # Get the class index of the detected object
+                class_index = int(det[-1]) # new5
+
+                # Get the class name of the detected object
+                object_class = names[class_index] # new5
                 
                 # Check if the objectID doesn't exist, add a new entry
                 if objectID not in df['Vehicle Object'].values:
-                    # df = df.append({"Time": time.time(), "Vehicle Object": objectID, "Direction": text}, ignore_index=True)
-                    # new_row = pd.DataFrame({"Time": [time.time()], "Vehicle Object": [objectID], "Direction": [text]})
-                    new_row = pd.DataFrame({"Time": [time_str], "Vehicle Object": [objectID], "Direction": [text]})
+                    new_row = pd.DataFrame({"Time": [time_str], "Vehicle Object": [objectID], "Class": [object_class], "Direction": [text]})
                     df = pd.concat([df, new_row], ignore_index=True)
                     
                 # If the objectID exists in the DataFrame
@@ -335,8 +339,7 @@ def run(
 
                     # Update the entry with the new direction
                     if df.loc[index, 'Direction'] != 'opp-dir':
-                        # df.loc[index, 'Direction'] = text
-                        df.loc[index] = [time_str, objectID, text]       
+                        df.loc[index] = [time_str, objectID, object_class, text]       
                 # new3: close
 
             cv2.line(im0, (5,ROI_MIN), (5, ROI_MAX), (0,255,0), 3)
